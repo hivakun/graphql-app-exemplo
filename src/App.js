@@ -7,44 +7,61 @@
  * @lint-ignore-every XPLATJSCOPYRIGHT1
  */
 
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import React from 'react';
+import { ActivityIndicator, StatusBar, View } from "react-native";
+import { ApolloProvider } from 'react-apollo';
+import { ApolloClient } from 'apollo-client';
+import { createHttpLink } from 'apollo-link-http';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { Provider } from 'unstated';
+import { createAppContainer, createDrawerNavigator } from 'react-navigation';
+import { Root } from "native-base";
+import { Login } from './pages/login';
+import Logo from './pages/login/components/logo';
+import { Cadastro } from './pages/cadastro';
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
+const httpLink = createHttpLink({
+    uri: 'http://localhost:4000'
 });
 
-type Props = {};
-export default class App extends Component<Props> {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+export const client = new ApolloClient({
+    link: httpLink,
+    cache: new InMemoryCache()
 });
+
+const rotas = createDrawerNavigator(
+    {
+        Login: {
+            screen: Login
+        },
+        Cadastro: {
+            screen: Cadastro
+        }
+    },
+    {
+        contentComponent: props => <Logo {...props} />,
+        initialRouteName: 'Login',
+        drawerPosition: 'right',
+    },
+);
+
+const ConteudoApp = createAppContainer(rotas);
+
+//Desabilita warnings na aplicação
+console.disableYellowBox = true;
+
+// Salva a tela atual e recarrega após o refresh
+const navigationPersistenceKey = __DEV__ ? "NavigationStateDEV" : null;
+
+export const App = () => (
+    <ApolloProvider client={client}>
+        <Root style={{flex: 1}}>
+            <Provider>
+                <ConteudoApp
+                    persistenceKey={navigationPersistenceKey}
+                    renderLoadingExperimental={() => <ActivityIndicator/>}
+                />
+            </Provider>
+        </Root>
+    </ApolloProvider>
+);
