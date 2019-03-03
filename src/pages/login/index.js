@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import Logo from './components/logo';
-import { Button, Container, Content, Form, Icon, Input, Item, Text } from 'native-base';
+import { Button, Container, Content, Form, Icon, Input, Item, Text, Toast } from 'native-base';
 import styles from './styles';
 import LoadingOverlay from '../../components/loading/loading';
+import UsuarioService from '../../service/usuario-service';
 
 export class Login extends Component {
 
@@ -15,6 +16,8 @@ export class Login extends Component {
             email: '',
             senha: '',
         };
+
+        this.service = new UsuarioService();
     }
 
     criarConta() {
@@ -27,12 +30,13 @@ export class Login extends Component {
 
         if (email && senha) {
             this.setState({carregando: true}, () => {
-                this.service.login({email: email.trim(), senha: senha.trim()}, async (dadosUsuario) => {
-                    this.setState({carregando: false}, () => {
-                        this.props.navigation.navigate('Inicio');
-                    });
-                }, (error) => {
+                this.service.login(email.trim(), senha.trim()).then(() => {
                     this.setState({carregando: false});
+                }).catch(error => {
+                    console.log('Error', error);
+                    this.setState({carregando: false}, () => {
+                        Toast.show({text: error.error});
+                    });
                 });
             });
         }

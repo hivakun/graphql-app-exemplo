@@ -1,0 +1,30 @@
+type Query {
+    info: String!
+    pratos: [Prato!]!
+}
+
+type Mutation {
+    addPrato(nome: String!, preco: Float, descricao: String, imagemUrl: String): Prato!
+    cadastro(email: String!, senha: String!, nome: String!, sobrenome: String!): Credenciais
+    login(email: String!, senha: String!): Credenciais
+}
+
+type Credenciais {
+    token: String
+    usuario: Usuario
+}
+
+type Usuario {
+    id: ID!
+    nome: String!
+    sobrenome: String!
+    email: String!
+}
+
+type Prato {
+    id: ID!
+    nome: String!
+    preco: Float
+    descricao: String
+    imagemUrl: String
+}

@@ -19,12 +19,13 @@ import { Root } from "native-base";
 import { Login } from './pages/login';
 import Logo from './pages/login/components/logo';
 import { Cadastro } from './pages/cadastro';
+import { Pedidos } from './pages/pedido';
 
 const httpLink = createHttpLink({
-    uri: 'http://localhost:4000'
+    uri: 'http://192.168.0.105:4000'
 });
 
-export const client = new ApolloClient({
+export const apolloClient = new ApolloClient({
     link: httpLink,
     cache: new InMemoryCache()
 });
@@ -36,11 +37,14 @@ const rotas = createDrawerNavigator(
         },
         Cadastro: {
             screen: Cadastro
+        },
+        Pedido: {
+            screen: Pedidos
         }
     },
     {
         contentComponent: props => <Logo {...props} />,
-        initialRouteName: 'Login',
+        initialRouteName: 'Pedido',
         drawerPosition: 'right',
     },
 );
@@ -54,14 +58,14 @@ console.disableYellowBox = true;
 const navigationPersistenceKey = __DEV__ ? "NavigationStateDEV" : null;
 
 export const App = () => (
-    <ApolloProvider client={client}>
-        <Root style={{flex: 1}}>
+    <Root style={{flex: 1}}>
+        <ApolloProvider client={apolloClient}>
             <Provider>
                 <ConteudoApp
                     persistenceKey={navigationPersistenceKey}
                     renderLoadingExperimental={() => <ActivityIndicator/>}
                 />
             </Provider>
-        </Root>
-    </ApolloProvider>
+        </ApolloProvider>
+    </Root>
 );
