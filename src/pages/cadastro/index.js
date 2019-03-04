@@ -1,13 +1,26 @@
 import React from 'react';
 import styles from './styles';
-import { Button, Container, Content, Form, Text } from 'native-base';
+import { Button, Container, Content, Form, Text, Toast } from 'native-base';
 import { EMAIL_REGEX } from '../../util/string-util';
 import LoadingOverlay from '../../components/loading/loading';
 import { ItemFormulario } from '../../components/form/item-formulario';
 import { FooterPadrao } from '../../components/footer/footer-padrao';
 import { HeaderBack } from '../../components/header/header-back/header-back';
+import { CORES } from '../../assets/cores';
+import UsuarioService from '../../service/usuario-service';
 
 export class Cadastro extends React.Component {
+
+    static navigationOptions = {
+        title: 'Cadastro',
+        headerStyle: {
+            backgroundColor: CORES.VERDE_SECUNDARIO
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+            fontWeight: 'bold',
+        },
+    };
 
     constructor(props) {
 
@@ -36,6 +49,8 @@ export class Cadastro extends React.Component {
                 valor: ''
             }
         };
+
+        this.service = new UsuarioService();
     }
 
     obterCampos() {
@@ -52,6 +67,7 @@ export class Cadastro extends React.Component {
             cadastro[campo] = this.state[campo].valor;
         });
 
+        console.log('Dados cadastro', cadastro);
         return cadastro;
     }
 
@@ -114,12 +130,14 @@ export class Cadastro extends React.Component {
         this.atualizarCampos(() => {
             if (this.dadosValidos()) {
                 this.setState({carregando: true}, () => {
-                    this.service.cadastrar(this.obterDadosCadastro(), () => {
+                    this.service.cadastrar(this.obterDadosCadastro()).then(() => {
                         this.setState({carregando: false}, () => {
                             this.props.navigation.navigate('Inicio');
                         });
-                    }, (error) => {
+                    }).catch(error => {
                         this.setState({carregando: false});
+                        console.log('Erro', error);
+                        Toast.show({text: 'Falha no cadastro'});
                     });
                 });
             }
@@ -141,7 +159,6 @@ export class Cadastro extends React.Component {
         return (
             <LoadingOverlay loading={this.state.carregando}>
                 <Container padder>
-                    <HeaderBack titulo='Cadastro' navigation={this.props.navigation}/>
                     <Content>
                         <Form>
                             <ItemFormulario

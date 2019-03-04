@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
     stepIndicator: {
         marginVertical: 20,
     },
-    botaoAgendar: {
+    botaoPedir: {
         marginTop: 20,
         alignItems: 'center',
         justifyContent: 'center',

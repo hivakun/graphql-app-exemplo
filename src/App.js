@@ -8,45 +8,82 @@
  */
 
 import React from 'react';
-import { ActivityIndicator, StatusBar, View } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
 import { createHttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
-import { Provider } from 'unstated';
-import { createAppContainer, createDrawerNavigator } from 'react-navigation';
+import { createAppContainer, createStackNavigator, createSwitchNavigator } from 'react-navigation';
 import { Root } from "native-base";
 import { Login } from './pages/login';
-import Logo from './pages/login/components/logo';
 import { Cadastro } from './pages/cadastro';
 import { Pedidos } from './pages/pedido';
+import UsuarioService from './service/usuario-service';
+import { Inicio } from './pages/inicio';
+import { setContext } from 'apollo-link-context'
 
 const httpLink = createHttpLink({
-    uri: 'http://192.168.0.105:4000'
+    uri: 'https://graphql-node-exemplo.herokuapp.com/'
+});
+
+const getJWToken = async () => {
+    const token = await UsuarioService.getToken();
+    return token ? `Bearer ${token}` : null;
+};
+
+const authLink = setContext(async (req, { headers }) => {
+    const token = await getJWToken();
+    return {
+        headers: {
+            ...headers,
+            authorization: token
+        }
+    }
 });
 
 export const apolloClient = new ApolloClient({
-    link: httpLink,
+    link: authLink.concat(httpLink),
     cache: new InMemoryCache()
 });
 
-const rotas = createDrawerNavigator(
+console.log(UsuarioService.getToken());
+
+const rotasLogin = createStackNavigator(
     {
         Login: {
             screen: Login
         },
         Cadastro: {
             screen: Cadastro
+        }
+    },
+    {
+        initialRouteName: 'Login',
+    },
+);
+
+const rotasApp = createStackNavigator(
+    {
+        Inicio: {
+            screen: Inicio
         },
         Pedido: {
             screen: Pedidos
         }
     },
     {
-        contentComponent: props => <Logo {...props} />,
-        initialRouteName: 'Pedido',
-        drawerPosition: 'right',
+        initialRouteName: 'Inicio',
     },
+);
+
+const rotas = createSwitchNavigator(
+    {
+        App: rotasApp,
+        Auth: rotasLogin
+    },
+    {
+        initialRouteName: 'Auth'
+    }
 );
 
 const ConteudoApp = createAppContainer(rotas);
@@ -55,17 +92,15 @@ const ConteudoApp = createAppContainer(rotas);
 console.disableYellowBox = true;
 
 // Salva a tela atual e recarrega após o refresh
-const navigationPersistenceKey = __DEV__ ? "NavigationStateDEV" : null;
+const navigationPersistenceKey = null;
 
 export const App = () => (
-    <Root style={{flex: 1}}>
-        <ApolloProvider client={apolloClient}>
-            <Provider>
-                <ConteudoApp
-                    persistenceKey={navigationPersistenceKey}
-                    renderLoadingExperimental={() => <ActivityIndicator/>}
-                />
-            </Provider>
-        </ApolloProvider>
-    </Root>
+    <ApolloProvider client={apolloClient}>
+        <Root>
+            <ConteudoApp
+                persistenceKey={navigationPersistenceKey}
+                renderLoadingExperimental={() => <ActivityIndicator/>}
+            />
+        </Root>
+    </ApolloProvider>
 );

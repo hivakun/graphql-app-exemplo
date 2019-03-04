@@ -2,12 +2,12 @@ import React from 'react';
 import { StyleSheet } from "react-native";
 import { Query } from 'react-apollo';
 import { Badge, Body, Content, Icon, List, ListItem, Right, Text, Left, Thumbnail, Spinner } from "native-base";
-import { PRATOS_QUERY } from '../../../service/pedido-service';
+import { BEBIDAS_QUERY } from '../../../service/pedido-service';
 import { CORES } from '../../../assets/cores';
 import { normalizePixels } from '../../../util/responsivo';
 import PropTypes from "prop-types";
 
-export class ListaPratos extends React.Component {
+export class ListaBebidas extends React.Component {
 
     constructor(props) {
 
@@ -15,38 +15,32 @@ export class ListaPratos extends React.Component {
 
         this.state = {
             carregando: false,
-            pratoSelecionado: {id: 0},
+            bebidaSelecionada: {id: 0},
         };
     }
 
-    selecionarPrato(prato) {
-        this.setState({pratoSelecionado: prato}, () => {
+    selecionarBebida(bebida) {
+        this.setState({bebidaSelecionada: bebida}, () => {
             if (this.props.onChange) {
-                this.props.onChange(prato);
+                this.props.onChange(bebida);
             }
         });
     }
 
-    estaSelecionado(prato) {
-        return this.state.pratoSelecionado.id === prato.id;
+    estaSelecionado(bebida) {
+        return this.state.bebidaSelecionada.id === bebida.id;
     }
 
-    renderListaPratos(pratos) {
+    renderListaBebidas(bebidas) {
 
-        const itens = pratos.map(prato => {
+        const itens = bebidas.map(bebida => {
             return (
-                <ListItem key={prato.id} avatar noIndent onPress={() => this.selecionarPrato(prato)}
-                          style={{backgroundColor: this.estaSelecionado(prato) ? CORES.SELECAO : 'white'}}>
-                    <Left>
-                        <Thumbnail source={{uri: prato.imagemUrl}}/>
-                    </Left>
+                <ListItem key={bebida.id} noIndent onPress={() => this.selecionarBebida(bebida)}
+                          style={{backgroundColor: this.estaSelecionado(bebida) ? CORES.SELECAO : 'white'}}>
                     <Body>
-                    <Text style={styles.textoPrato}>
-                        {prato.nome}
-                    </Text>
-                    <Text note>
-                        {prato.descricao}
-                    </Text>
+                        <Text style={styles.textoBebida}>
+                            {bebida.nome}
+                        </Text>
                     </Body>
                     <Icon type="Entypo" name="chevron-right"/>
                 </ListItem>
@@ -74,7 +68,7 @@ export class ListaPratos extends React.Component {
             if (!possuiDados) {
                 conteudo = <Text style={styles.textAlerta}>Não há dados</Text>;
             } else {
-                conteudo = this.renderListaPratos(data.produtos);
+                conteudo = this.renderListaBebidas(data.produtos);
             }
         }
 
@@ -83,7 +77,7 @@ export class ListaPratos extends React.Component {
 
     render() {
         return (
-            <Query query={PRATOS_QUERY}>{(resposta) => {
+            <Query query={BEBIDAS_QUERY}>{(resposta) => {
                 return (
                     <Content>
                         {this.renderConteudo(resposta)}
@@ -95,12 +89,12 @@ export class ListaPratos extends React.Component {
     }
 }
 
-ListaPratos.propTypes = {
+ListaBebidas.propTypes = {
     onChange: PropTypes.func
 };
 
 const styles = StyleSheet.create({
-    textoPrato: {
+    textoBebida: {
         color: CORES.CINZA_SECUNDARIO,
         fontSize: normalizePixels(18)
     },

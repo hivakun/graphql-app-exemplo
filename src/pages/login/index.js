@@ -7,6 +7,13 @@ import UsuarioService from '../../service/usuario-service';
 
 export class Login extends Component {
 
+    static navigationOptions = {
+        headerStyle: {
+            backgroundColor: 'transparent',
+            height: 0
+        }
+    };
+
     constructor(props) {
 
         super(props);
@@ -18,6 +25,25 @@ export class Login extends Component {
         };
 
         this.service = new UsuarioService();
+    }
+
+    componentDidMount() {
+        this.setState({carregando: true}, () => this.verificarUsuario());
+    }
+
+    verificarUsuario() {
+        UsuarioService.testarServidor();
+        console.log('Verificando usuário logado');
+        UsuarioService.getToken().then((token) => {
+            this.setState({carregando: false});
+            console.log(token);
+            if (token) {
+                this.props.navigation.navigate('Inicio');
+            }
+        }).catch(error => {
+            this.setState({carregando: false});
+            console.log('Falha ao obter usuário', error);
+        });
     }
 
     criarConta() {
@@ -32,6 +58,7 @@ export class Login extends Component {
             this.setState({carregando: true}, () => {
                 this.service.login(email.trim(), senha.trim()).then(() => {
                     this.setState({carregando: false});
+                    this.props.navigation.navigate('Inicio');
                 }).catch(error => {
                     console.log('Error', error);
                     this.setState({carregando: false}, () => {

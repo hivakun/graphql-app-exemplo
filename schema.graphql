@@ -1,10 +1,13 @@
 type Query {
     info: String!
-    pratos: [Prato!]!
+    produtos(filter: String): [Produto!]!
+    pedidos: [Pedido!]!
 }
 
 type Mutation {
-    addPrato(nome: String!, preco: Float, descricao: String, imagemUrl: String): Prato!
+    pedir(idPrato: ID!, idBebida: ID!): Pedido!
+    addBebida(nome: String!): Produto!
+    addPrato(nome: String!, descricao: String!, imagemUrl: String!): Produto!
     cadastro(email: String!, senha: String!, nome: String!, sobrenome: String!): Credenciais
     login(email: String!, senha: String!): Credenciais
 }
@@ -19,12 +22,21 @@ type Usuario {
     nome: String!
     sobrenome: String!
     email: String!
+    pedidos: [Pedido!]!
 }
 
-type Prato {
+type Produto {
     id: ID!
     nome: String!
-    preco: Float
+    categoria: String!
     descricao: String
     imagemUrl: String
+}
+
+type Pedido {
+    id: ID!
+    usuario: Usuario!
+    prato: Produto!
+    bebida: Produto!
+    createdAt: String!
 }
