@@ -1,0 +1,42 @@
+type Query {
+    info: String!
+    produtos(filter: String): [Produto!]!
+    pedidos: [Pedido!]!
+}
+
+type Mutation {
+    pedir(idPrato: ID!, idBebida: ID!): Pedido!
+    addBebida(nome: String!): Produto!
+    addPrato(nome: String!, descricao: String!, imagemUrl: String!): Produto!
+    cadastro(email: String!, senha: String!, nome: String!, sobrenome: String!): Credenciais
+    login(email: String!, senha: String!): Credenciais
+}
+
+type Credenciais {
+    token: String
+    usuario: Usuario
+}
+
+type Usuario {
+    id: ID!
+    nome: String!
+    sobrenome: String!
+    email: String!
+    pedidos: [Pedido!]!
+}
+
+type Produto {
+    id: ID!
+    nome: String!
+    categoria: String!
+    descricao: String
+    imagemUrl: String
+}
+
+type Pedido {
+    id: ID!
+    usuario: Usuario!
+    prato: Produto!
+    bebida: Produto!
+    createdAt: String!
+}

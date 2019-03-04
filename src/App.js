@@ -7,44 +7,100 @@
  * @lint-ignore-every XPLATJSCOPYRIGHT1
  */
 
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import React from 'react';
+import { ActivityIndicator } from "react-native";
+import { ApolloProvider } from 'react-apollo';
+import { ApolloClient } from 'apollo-client';
+import { createHttpLink } from 'apollo-link-http';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { createAppContainer, createStackNavigator, createSwitchNavigator } from 'react-navigation';
+import { Root } from "native-base";
+import { Login } from './pages/login';
+import { Cadastro } from './pages/cadastro';
+import { Pedidos } from './pages/pedido';
+import UsuarioService from './service/usuario-service';
+import { Inicio } from './pages/inicio';
+import { setContext } from 'apollo-link-context'
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
+const httpLink = createHttpLink({
+    uri: 'https://graphql-node-exemplo.herokuapp.com/'
 });
 
-type Props = {};
-export default class App extends Component<Props> {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
-      </View>
-    );
-  }
-}
+const getJWToken = async () => {
+    const token = await UsuarioService.getToken();
+    return token ? `Bearer ${token}` : null;
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+const authLink = setContext(async (req, { headers }) => {
+    const token = await getJWToken();
+    return {
+        headers: {
+            ...headers,
+            authorization: token
+        }
+    }
 });
+
+export const apolloClient = new ApolloClient({
+    link: authLink.concat(httpLink),
+    cache: new InMemoryCache()
+});
+
+console.log(UsuarioService.getToken());
+
+const rotasLogin = createStackNavigator(
+    {
+        Login: {
+            screen: Login
+        },
+        Cadastro: {
+            screen: Cadastro
+        }
+    },
+    {
+        initialRouteName: 'Login',
+    },
+);
+
+const rotasApp = createStackNavigator(
+    {
+        Inicio: {
+            screen: Inicio
+        },
+        Pedido: {
+            screen: Pedidos
+        }
+    },
+    {
+        initialRouteName: 'Inicio',
+    },
+);
+
+const rotas = createSwitchNavigator(
+    {
+        App: rotasApp,
+        Auth: rotasLogin
+    },
+    {
+        initialRouteName: 'Auth'
+    }
+);
+
+const ConteudoApp = createAppContainer(rotas);
+
+//Desabilita warnings na aplicação
+console.disableYellowBox = true;
+
+// Salva a tela atual e recarrega após o refresh
+const navigationPersistenceKey = null;
+
+export const App = () => (
+    <ApolloProvider client={apolloClient}>
+        <Root>
+            <ConteudoApp
+                persistenceKey={navigationPersistenceKey}
+                renderLoadingExperimental={() => <ActivityIndicator/>}
+            />
+        </Root>
+    </ApolloProvider>
+);
